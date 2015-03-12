@@ -1,45 +1,52 @@
 class FancyMarkup
+
+  INDENT = "  "
+  TAGS_MAP = {list: "ul",
+              div: "div",
+              item: "il",
+              body: "body"}
+
   def initialize
     @result = ""
     @depth = 0
-    @indent = "  "
   end
 
   def document(&block)
-    @depth += 1
-    @result += "<html> \n"
+    @result << "<html> \n"
     instance_eval(&block)
-    @result += "</html> \n"
+    @result << "</html> \n"
   end
 
-  def body
-    my_depth = @depth
-    @depth += 1
-    @result += "#{@indent*@depth}<body> \n"
-    yield
-    @result += "#{@indent*my_depth}</body> \n"
+  def process_options(params)
+    params.empty? ? "" : params.map{ |k,v| "#{k}='#{v}'" }.join(" ") 
   end
   
-  [:div, :list].each do |tag|
-    define_method "#{tag}" do |params, &block| 
-      tags_map = {:list => "ul",
-                  :div => "div"}
-      my_depth = @depth
+  TAGS_MAP.keys.each do |func_tag|
+    define_method "#{func_tag}" do |args=nil, &block|
       @depth += 1
-      my_options = params.map{ |k,v| "#{k}='#{v}'" }.join(" ")
-      @result += "#{@indent*@depth}<#{tags_map[tag]} "  + my_options + ">\n"
-      block.call
-      @result += "#{@indent*my_depth}<#{tags_map[tag]}/> \n"
+      current_depth = @depth
+
+      if args.is_a? Hash
+        options = process_options(args)
+      else
+        html_content = args
+      end
+      
+      if options
+        @result << "#{INDENT*current_depth}<#{TAGS_MAP[func_tag]} " + options + "> \n"
+      else
+        @result << "#{INDENT*current_depth}<#{TAGS_MAP[func_tag]}> \n"
+      end
+
+      if html_content
+        @result << "#{INDENT*current_depth} #{html_content} \n"
+      end
+      
+      instance_eval(&block) if block
+      @result << "#{INDENT*current_depth}<#{TAGS_MAP[func_tag]}/> \n"
     end
   end
 
-  def item(html=nil)
-    my_depth = @depth
-    @result += "#{@indent*@depth}<li> \n"
-    block_given? ? yield : @result += "#{@indent*my_depth} #{html} \n" || ""
-    @result += "#{@indent*my_depth}</li> \n"
-  end
-  
   def to_html
     puts @result
   end
