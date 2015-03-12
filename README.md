@@ -2,7 +2,7 @@
 Resources for Ruby DSL talk
 
 ## Slides
-
+<a href="http://www.slideshare.net/orendon/medellinrb-domain-specific-languages-in-ruby-march-2015" target="_blank">Domain Specific Languages in Ruby + Code Kata</a>
 
 ## Code Kata
 Our goal is to create an HTML Markup DSL based on todays talk, (you can take router example as reference)
